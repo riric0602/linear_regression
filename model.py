@@ -7,6 +7,13 @@ theta = np.zeros((2, 1))
 
 
 def normalize_features(x: np.ndarray) -> np.ndarray:
+    '''
+    Using the Standardization technique to make the training faster
+    by having features on the same scale and preventing features
+    with large numeric values from dominating the learning process
+    :param: x: features from data set, mileage in our case
+    :return: normalized x features from dataset
+    '''
     return (x - np.mean(x)) / np.std(x)
 
 
@@ -63,7 +70,8 @@ if __name__ == "__main__":
     X = np.hstack((x_normalized, np.ones(x_normalized.shape)))
     print(f'X :\n{X}')
 
-    # calculate cost before training
+    # calculate cost before and after training
+    # TO DO : plot in each iteration -> each cost + plot linear regression evolution
     print(f'Initial cost: {cost(X, y, theta)}')
     learning_rate = 0.01
     n_iterations = 500
@@ -100,8 +108,5 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.show()
 
-    # plot linear regression
-    # calculate new cost
-    # compare cost and plot evolution of minimization algorithm
     # plot polyfit and trained model and compare
     # make statistics
