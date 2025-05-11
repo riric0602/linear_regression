@@ -1,9 +1,12 @@
 import sys
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+import pandas as pd
+
 
 def predict(mileage: int, theta: np.array) -> int:
     return theta[1] + (theta[0] * mileage)
+
 
 if __name__ == "__main__":
     if (len(sys.argv) < 2):

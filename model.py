@@ -2,18 +2,23 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Initializing theta0 and theta1 values to 0
 theta = np.zeros((2, 1))
+
 
 def normalize_features(x: np.ndarray) -> np.ndarray:
     return (x - np.mean(x)) / np.std(x)
+
 
 def denormalize_features(theta, x):
     theta0 = theta[0, 0] / np.std(x)
     theta1 = theta[1, 0] - (theta0 * np.mean(x))
     return (theta0, theta1)
 
+
 def model(X, theta):
     return X.dot(theta)
+
 
 def cost(X, y, theta):
     m = len(y)
@@ -25,6 +30,7 @@ def cost(X, y, theta):
 
     return sum / (2 * m)
 
+
 def gradient(X, y, theta):
     m = len(y)
     error = model(X, theta) - y
@@ -33,12 +39,13 @@ def gradient(X, y, theta):
     theta0_gradient = (1 / m) * np.sum(error)
 
     return np.array([[theta1_gradient], [theta0_gradient]])
-    
+
 
 def gradient_descent(X, y, theta, learning_rate, n_iterations):
     for i in range(n_iterations):
         theta = theta - (gradient(X, y, theta) * learning_rate)
     return theta
+
 
 if __name__ == "__main__":
     car_path = "./data.csv"
@@ -77,11 +84,14 @@ if __name__ == "__main__":
     np.save(theta_file, theta)
 
     # Now predict using your model function
-    X_raw = np.hstack((x, np.ones(x.shape)))  # Create X like before but with raw x
+    # Create X like before but with raw x
+    X_raw = np.hstack((x, np.ones(x.shape)))
     y_pred = model(X_raw, theta)
 
-    plt.scatter(x, y, color='blue', label='Data')  # Scatter plot of the dataset
-    plt.plot(x, y_pred, color='red', label='Manual Regression')  # Regression line
+    # Scatter plot of the dataset
+    plt.scatter(x, y, color='blue', label='Data')
+    # Regression line
+    plt.plot(x, y_pred, color='red', label='Manual Regression')
     plt.title('Manual Linear Regression')
     plt.xlabel('Mileage')
     plt.ylabel('Price')
