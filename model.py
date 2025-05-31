@@ -52,12 +52,17 @@ def gradient(X, y, theta):
 
 def gradient_descent(X, y, theta, learning_rate, n_iterations):
     cost_evolution = np.zeros(n_iterations)
+    theta_history = [[0, 0] for _ in range(10)]
 
+    index = 0
     for i in range(n_iterations):
         theta = theta - (gradient(X, y, theta) * learning_rate)
         cost_evolution[i] = cost(X, y, theta).item()
+        if i % 50 == 0 and index < 10:
+            theta_history[index] = theta
+            index += 1
 
-    return theta, cost_evolution
+    return theta, cost_evolution, theta_history
 
 
 def coef_determination(y, pred):
@@ -120,7 +125,7 @@ if __name__ == "__main__":
     print(theta)
 
     # train model
-    theta, cost_evolution = gradient_descent(X, y, theta, learning_rate, n_iterations)
+    theta, cost_evolution, theta_history = gradient_descent(X, y, theta, learning_rate, n_iterations)
     print(f'Trained cost: {cost(X, y, theta)}')
 
     # Rebuild theta into proper shape for model()
@@ -134,6 +139,13 @@ if __name__ == "__main__":
 
     # Create X like before but with raw x
     X_raw = np.hstack((x, np.ones(x.shape)))
+
+    # Denormalize theta history
+    y_history = [None] * 10
+    for i in range(10):
+        theta_history[i] = denormalize_features(theta_history[i], x)
+        y_history[i] = model(X_raw, theta_history[i])
+
     y_pred = model(X_raw, theta)
 
     # Scatter plot of the dataset
@@ -161,17 +173,54 @@ if __name__ == "__main__":
     absolute_error = mean_absolute_error(y, y_pred)
     print(f"The absolute error in the prediction of the model (MAE) is {absolute_error[0]:.2f}")
 
-    # plot evolution of cost
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    plt.plot(np.arange(n_iterations), cost_evolution, color='pink', label='Cost Evolution')
-    plt.title('Cost Evolution')
-    plt.xlabel('Iterations')
-    plt.ylabel('Cost')
-    plt.legend()
+    # Left Subplot: Manual Gradient Descent Regression
+    axes[0].plot(np.arange(n_iterations), cost_evolution, color='pink', label='Cost Evolution')
+    axes[0].set_title('Cost Evolution')
+    axes[0].set_xlabel('Iterations')
+    axes[0].set_ylabel('Cost')
+    axes[0].legend()
+
+    # Right Subplot: Polyfit Regression
+    axes[1].scatter(x, y, color='blue', label='Data')
+    for i in range(10):
+        plt.plot(x, y_history[i], label=f'Regression {i * 50}', linestyle=':')
+    axes[1].set_title('Linear Regression Evolution')
+    axes[1].set_xlabel('Mileage')
+    axes[1].set_ylabel('Price')
+    axes[1].legend()
+
+    # Adjust layout and display the plots
     plt.tight_layout()
-    plt.grid(True)
     plt.show()
 
-    
     # plot polyfit and trained model and compare
+    theta_polyfit = np.polyfit(x.flatten(), y, 1)
+    print(theta_polyfit)
+
+    prediction_polyfit = theta_polyfit[0] * x + theta_polyfit[1]
+
+    # Scatter plot of the dataset
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    # Left Subplot: Manual Gradient Descent Regression
+    axes[0].scatter(x, y, color='blue', label='Data')
+    axes[0].plot(x, y_pred, color='red', label='Manual Regression')
+    axes[0].set_title('Manual Linear Regression')
+    axes[0].set_xlabel('Mileage')
+    axes[0].set_ylabel('Price')
+    axes[0].legend()
+
+    # Right Subplot: Polyfit Regression
+    axes[1].scatter(x, y, color='blue', label='Data')
+    axes[1].plot(x, prediction_polyfit, color='green', label='Polyfit Regression')
+    axes[1].set_title('Polyfit Linear Regression')
+    axes[1].set_xlabel('Mileage')
+    axes[1].set_ylabel('Price')
+    axes[1].legend()
+
+    # Adjust layout and display the plots
+    plt.tight_layout()
+    plt.show()
 
