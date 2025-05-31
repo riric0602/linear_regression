@@ -1,19 +1,21 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 # Initializing theta0 and theta1 values to 0
 theta = np.zeros((2, 1))
 
 
 def normalize_features(x: np.ndarray) -> np.ndarray:
-    '''
-    Using the Standardization technique to make the training faster
-    by having features on the same scale and preventing features
-    with large numeric values from dominating the learning process
-    :param: x: features from data set, mileage in our case
+    """
+    Use the Standardization technique to make the training faster
+    by having features on the same scale, to prevent the ones
+    with large values from dominating the learning process
+
+    :param: x: features from data set, car mileage in our case
     :return: normalized x features from dataset
-    '''
+    """
     return (x - np.mean(x)) / np.std(x)
 
 
@@ -71,27 +73,24 @@ if __name__ == "__main__":
     print(f'X :\n{X}')
 
     # calculate cost before and after training
-    # TO DO : plot in each iteration -> each cost + plot linear regression evolution
     print(f'Initial cost: {cost(X, y, theta)}')
     learning_rate = 0.01
     n_iterations = 500
     print(theta)
-    theta = gradient_descent(X, y, theta, learning_rate, n_iterations)
-    # train model
 
+    # train model
+    theta = gradient_descent(X, y, theta, learning_rate, n_iterations)
     print(f'Trained cost: {cost(X, y, theta)}')
 
+    # Rebuild theta into proper shape for model()
     theta = denormalize_features(theta, x)
     print(f'Updated denormalized theta: {theta}')
-
-    # Rebuild theta into proper shape for model()
     theta = np.array(theta).reshape(-1, 1)
 
     # Save theta
     theta_file = 'theta.npy'
     np.save(theta_file, theta)
 
-    # Now predict using your model function
     # Create X like before but with raw x
     X_raw = np.hstack((x, np.ones(x.shape)))
     y_pred = model(X_raw, theta)
