@@ -51,9 +51,13 @@ def gradient(X, y, theta):
 
 
 def gradient_descent(X, y, theta, learning_rate, n_iterations):
+    cost_evolution = np.zeros(n_iterations)
+
     for i in range(n_iterations):
         theta = theta - (gradient(X, y, theta) * learning_rate)
-    return theta
+        cost_evolution[i] = cost(X, y, theta).item()
+
+    return theta, cost_evolution
 
 
 def coef_determination(y, pred):
@@ -116,7 +120,7 @@ if __name__ == "__main__":
     print(theta)
 
     # train model
-    theta = gradient_descent(X, y, theta, learning_rate, n_iterations)
+    theta, cost_evolution = gradient_descent(X, y, theta, learning_rate, n_iterations)
     print(f'Trained cost: {cost(X, y, theta)}')
 
     # Rebuild theta into proper shape for model()
@@ -158,7 +162,16 @@ if __name__ == "__main__":
     print(f"The absolute error in the prediction of the model (MAE) is {absolute_error[0]:.2f}")
 
     # plot evolution of cost
-    
+
+    plt.plot(np.arange(n_iterations), cost_evolution, color='pink', label='Cost Evolution')
+    plt.title('Cost Evolution')
+    plt.xlabel('Iterations')
+    plt.ylabel('Cost')
+    plt.legend()
+    plt.tight_layout()
+    plt.grid(True)
+    plt.show()
+
     
     # plot polyfit and trained model and compare
 
