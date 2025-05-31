@@ -56,6 +56,43 @@ def gradient_descent(X, y, theta, learning_rate, n_iterations):
     return theta
 
 
+def coef_determination(y, pred):
+    u = 0
+    v = 0
+    m = y.size
+    y_mean = y.mean()
+
+    for i in range(m):
+        u += (y[i] - pred[i])**2
+        v += (y[i] - y_mean)**2
+
+    return 1 - u / v
+
+
+def mean_squared_error(y, pred):
+    u = 0
+    m = y.size
+
+    for i in range(m):
+        u += (y[i] - pred[i])**2
+
+    return u / m
+
+
+def root_mean_squared_error(error):
+    return math.sqrt(error)
+
+
+def mean_absolute_error(y, pred):
+    u = 0
+    m = y.size
+
+    for i in range(m):
+        u += abs(y[i] - pred[i])
+
+    return u / m
+
+
 if __name__ == "__main__":
     car_path = "./data.csv"
     df = pd.read_csv(car_path)
@@ -107,5 +144,21 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.show()
 
-    # plot polyfit and trained model and compare
     # make statistics
+    coef = coef_determination(y, y_pred) * 100
+    print(f"The precision of the model (R^2) is {coef[0]:.2f}%")
+
+    error = mean_squared_error(y, y_pred)
+    print(f"The average error in the prediction of the model (MSE) is {error[0]:.2f}")
+
+    root_error = root_mean_squared_error(error[0])
+    print(f"The root average error in the prediction of the model (RMSE) is {root_error:.2f}")
+
+    absolute_error = mean_absolute_error(y, y_pred)
+    print(f"The absolute error in the prediction of the model (MAE) is {absolute_error[0]:.2f}")
+
+    # plot evolution of cost
+    
+    
+    # plot polyfit and trained model and compare
+
