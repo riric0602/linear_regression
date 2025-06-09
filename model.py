@@ -7,10 +7,10 @@ import math
 theta = np.zeros((2, 1))
 
 
-def normalize_features(x: np.ndarray) -> np.ndarray:
+def normalize_features(x: np.array) -> np.array:
     """
     Use the Standardization technique to make the training faster
-    by having features on the same scale, to prevent the ones
+    by having features on the same scale and prevent the ones
     with large values from dominating the learning process
 
     :param: x: features from data set, car mileage in our case
@@ -19,17 +19,39 @@ def normalize_features(x: np.ndarray) -> np.ndarray:
     return (x - np.mean(x)) / np.std(x)
 
 
-def denormalize_features(theta, x):
+def denormalize_features(theta: np.array, x: np.array) -> tuple:
+    """
+    Denormalizes the theta parameters to their original scale
+
+    :param theta: model parameters
+    :param x: features from data set
+    :return: denormalized theta parameters
+    """
     theta0 = theta[0, 0] / np.std(x)
     theta1 = theta[1, 0] - (theta0 * np.mean(x))
     return (theta0, theta1)
 
 
-def model(X, theta):
+def model(X: np.ndarray, theta: np.array) -> np.ndarray:
+    """
+    Calculates the predicted values based on the model parameters
+
+    :param X: features from data set
+    :param theta: model parameters
+    :return: predicted values
+    """
     return X.dot(theta)
 
 
-def cost(X, y, theta):
+def cost(X: np.ndarray, y: np.array, theta: np.array) -> float:
+    """
+    Calculates the error between predicted and expected values
+
+    :param X: features from data set
+    :param y: expected values from data set
+    :param theta: model parameters
+    :return: real number describing model performance
+    """
     m = len(y)
     sum = 0
 
@@ -40,7 +62,16 @@ def cost(X, y, theta):
     return sum / (2 * m)
 
 
-def gradient(X, y, theta):
+def gradient(X: np.ndarray, y: np.array, theta: np.array) -> np.ndarray:
+    """
+    Calculates the gradient of the cost function
+    according to theta model parameters
+
+    :param X: features from data set
+    :param y: expected values from data set
+    :param theta: model parameters
+    :return: gradient of the cost function
+    """
     m = len(y)
     error = model(X, theta) - y
 
@@ -50,13 +81,31 @@ def gradient(X, y, theta):
     return np.array([[theta1_gradient], [theta0_gradient]])
 
 
-def gradient_descent(X, y, theta, learning_rate, n_iterations):
+def gradient_descent(
+    X: np.ndarray,
+    y: np.array,
+    theta: np.array,
+    learning_rate: float,
+    n_iterations: int
+) -> tuple:
+    """
+    Adjusts the model’s parameters to minimize errors
+    finding the best-fit line using gradient descent algorithm
+
+    :param X: features from data set
+    :param y: expected values from data set
+    :param theta: model parameters
+    :param learning_rate: step size for each iteration
+    :param n_iterations: number of iterations to perform
+    :return: tuple containing the final theta, cost and theta history
+    """
     cost_evolution = np.zeros(n_iterations)
     theta_history = [[0, 0] for _ in range(10)]
 
     index = 0
     for i in range(n_iterations):
         theta = theta - (gradient(X, y, theta) * learning_rate)
+
         cost_evolution[i] = cost(X, y, theta).item()
         if i % 50 == 0 and index < 10:
             theta_history[index] = theta
@@ -65,7 +114,15 @@ def gradient_descent(X, y, theta, learning_rate, n_iterations):
     return theta, cost_evolution, theta_history
 
 
-def coef_determination(y, pred):
+def coef_determination(y: np.array, pred: np.ndarray) -> np.ndarray:
+    """
+    Calculates the coefficient of determination (R^2)
+    to evaluate the model's performance
+
+    :param y: expected values from data set
+    :param pred: predicted values from the model
+    :return: coefficient of determination (R^2)
+    """
     u = 0
     v = 0
     m = y.size
@@ -78,7 +135,15 @@ def coef_determination(y, pred):
     return 1 - u / v
 
 
-def mean_squared_error(y, pred):
+def mean_squared_error(y: np.array, pred: np.ndarray) -> np.ndarray:
+    """
+    Calculates the mean squared error (MSE)
+    between expected and predicted values
+
+    :param y: expected values from data set
+    :param pred: predicted values from the model
+    :return: mean squared error
+    """
     u = 0
     m = y.size
 
@@ -88,11 +153,25 @@ def mean_squared_error(y, pred):
     return u / m
 
 
-def root_mean_squared_error(error):
+def root_mean_squared_error(error: float) -> float:
+    """
+    Calculates the root mean squared error (RMSE)
+
+    :param error: mean squared error
+    :return: root mean squared error
+    """
     return math.sqrt(error)
 
 
-def mean_absolute_error(y, pred):
+def mean_absolute_error(y: np.array, pred: np.ndarray) -> float:
+    """
+    Calculates the mean absolute error (MAE)
+    between expected and predicted values
+
+    :param y: expected values from data set
+    :param pred: predicted values from the model
+    :return: mean absolute error
+    """
     u = 0
     m = y.size
 
@@ -103,12 +182,14 @@ def mean_absolute_error(y, pred):
 
 
 if __name__ == "__main__":
+    # Load the dataset and convert it to a DataFrame
     car_path = "./data.csv"
     df = pd.read_csv(car_path)
-    print(f'DataFrame: \n{df}', flush=True)
+    print(f'Car Mileage DataFrame: \n{df}', flush=True)
 
-    x = df["km"].values
-    y = df["price"].values
+    # Convert mileage and price lists into 2D column vectors
+    x = np.array(df["km"].values)
+    y = np.array(df["price"].values)
     x = x.reshape(-1, 1)
     y = y.reshape(-1, 1)
 
@@ -118,14 +199,16 @@ if __name__ == "__main__":
     X = np.hstack((x_normalized, np.ones(x_normalized.shape)))
     print(f'X :\n{X}')
 
-    # calculate cost before and after training
+    # calculate cost before training
     print(f'Initial cost: {cost(X, y, theta)}')
     learning_rate = 0.01
     n_iterations = 500
     print(theta)
 
     # train model
-    theta, cost_evolution, theta_history = gradient_descent(X, y, theta, learning_rate, n_iterations)
+    theta, cost_evolution, theta_history = gradient_descent(
+        X, y, theta, learning_rate, n_iterations
+    )
     print(f'Trained cost: {cost(X, y, theta)}')
 
     # Rebuild theta into proper shape for model()
