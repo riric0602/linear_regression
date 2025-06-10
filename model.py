@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import argparse
 
 # Initializing theta0 and theta1 values to 0
 theta = np.zeros((2, 1))
@@ -180,8 +181,48 @@ def mean_absolute_error(y: np.array, pred: np.ndarray) -> float:
 
     return u / m
 
+def argparse_flags() -> argparse.Namespace:
+    """
+    Parse command line arguments
+    :return: args passed in command line
+    """
+    parser = argparse.ArgumentParser(
+            description="Train a linear regression model on car data (mileage and price)"
+    )
+
+    parser.add_argument(
+            "-p",
+            "--plot",
+            action="store_true",
+            help="Display the regression line of the model"
+    )
+    parser.add_argument(
+            "-e",
+            "--evolution",
+            action="store_true",
+            help="Display the cost and theta calculation evolution",
+    )
+    parser.add_argument(
+            "-c",
+            "--compare",
+            action="store_true",
+            help="Compare with the polyfit regression",
+    )
+    parser.add_argument(
+            "-m",
+            "--metrics",
+            action="store_true",
+            help="Display model performance metrics (R^2, MSE, RMSE, MAE)",
+    )
+
+    parsed_args = parser.parse_args()
+
+    return parsed_args
+
 
 if __name__ == "__main__":
+    args = argparse_flags()
+
     # Load the dataset and convert it to a DataFrame
     car_path = "./data.csv"
     df = pd.read_csv(car_path)
@@ -194,31 +235,54 @@ if __name__ == "__main__":
 
     x_normalized = normalize_features(x)
     X = np.hstack((x_normalized, np.ones(x_normalized.shape)))
-    print(f'Normalized KM (features) Values: :\n{X}')
 
     # calculate cost before training
-    print(f'Initial cost: {cost(X, y, theta)}')
     learning_rate = 0.01
     n_iterations = 500
-    print(theta)
 
     # train model
     theta, cost_evolution, theta_history = gradient_descent(
         X, y, theta, learning_rate, n_iterations
     )
-    print(f'Trained cost: {cost(X, y, theta)}')
+    print(f'Cost after Minimization Algorithm (Gradient Descent): {cost(X, y, theta)}')
 
     # Rebuild theta into proper shape for model()
     theta = denormalize_features(theta, x)
-    print(f'Updated denormalized theta: {theta}')
     theta = np.array(theta).reshape(-1, 1)
 
     # Save theta
     theta_file = 'theta.npy'
     np.save(theta_file, theta)
 
-    # Create X like before but with raw x
     X_raw = np.hstack((x, np.ones(x.shape)))
+    y_pred = model(X_raw, theta)
+
+    if args.plot:
+        # Scatter plot of the dataset
+        plt.scatter(x, y, color='blue', label='Data')
+        # Regression line
+        plt.plot(x, y_pred, color='red', label='Manual Regression')
+        plt.title('Manual Linear Regression')
+        plt.xlabel('Mileage')
+        plt.ylabel('Price')
+        plt.legend()
+        plt.tight_layout()
+        plt.grid(True)
+        plt.show()
+
+    # Display statistics
+    if args.metrics:
+        coef = coef_determination(y, y_pred) * 100
+        print(f"The precision of the model (R^2) is {coef[0]:.2f}%")
+
+        error = mean_squared_error(y, y_pred)
+        print(f"The average error in the prediction of the model (MSE) is {error[0]:.2f}")
+
+        root_error = root_mean_squared_error(error[0])
+        print(f"The root average error in the prediction of the model (RMSE) is {root_error:.2f}")
+
+        absolute_error = mean_absolute_error(y, y_pred)
+        print(f"The absolute error in the prediction of the model (MAE) is {absolute_error:.2f}")
 
     # Denormalize theta history
     y_history = [None] * 10
@@ -226,78 +290,54 @@ if __name__ == "__main__":
         theta_history[i] = denormalize_features(theta_history[i], x)
         y_history[i] = model(X_raw, theta_history[i])
 
-    y_pred = model(X_raw, theta)
+    if args.evolution:
+        fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    # Scatter plot of the dataset
-    plt.scatter(x, y, color='blue', label='Data')
-    # Regression line
-    plt.plot(x, y_pred, color='red', label='Manual Regression')
-    plt.title('Manual Linear Regression')
-    plt.xlabel('Mileage')
-    plt.ylabel('Price')
-    plt.legend()
-    plt.tight_layout()
-    plt.grid(True)
-    plt.show()
+        # Left Subplot: Manual Gradient Descent Regression
+        axes[0].plot(np.arange(n_iterations), cost_evolution, color='pink', label='Cost Evolution')
+        axes[0].set_title('Cost Evolution')
+        axes[0].set_xlabel('Iterations')
+        axes[0].set_ylabel('Cost')
+        axes[0].legend()
 
-    # make statistics
-    coef = coef_determination(y, y_pred) * 100
-    print(f"The precision of the model (R^2) is {coef[0]:.2f}%")
+        # Right Subplot: Polyfit Regression
+        axes[1].scatter(x, y, color='blue', label='Data')
+        for i in range(10):
+            plt.plot(x, y_history[i], label=f'Regression {i * 50}', linestyle=':')
 
-    error = mean_squared_error(y, y_pred)
-    print(f"The average error in the prediction of the model (MSE) is {error[0]:.2f}")
+        axes[1].set_title('Linear Regression Evolution')
+        axes[1].set_xlabel('Mileage')
+        axes[1].set_ylabel('Price')
+        axes[1].legend()
 
-    root_error = root_mean_squared_error(error[0])
-    print(f"The root average error in the prediction of the model (RMSE) is {root_error:.2f}")
+        plt.tight_layout()
+        plt.show()
 
-    absolute_error = mean_absolute_error(y, y_pred)
-    print(f"The absolute error in the prediction of the model (MAE) is {absolute_error:.2f}")
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    if args.compare:
+        # plot polyfit and trained model and compare
+        theta_polyfit = np.polyfit(x.flatten(), y, 1)
+        prediction_polyfit = theta_polyfit[0] * x + theta_polyfit[1]
+        
+        # Scatter plot of the dataset
+        fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    # Left Subplot: Manual Gradient Descent Regression
-    axes[0].plot(np.arange(n_iterations), cost_evolution, color='pink', label='Cost Evolution')
-    axes[0].set_title('Cost Evolution')
-    axes[0].set_xlabel('Iterations')
-    axes[0].set_ylabel('Cost')
-    axes[0].legend()
+        # Left Subplot: Manual Linear Regression
+        axes[0].scatter(x, y, color='blue', label='Data')
+        axes[0].plot(x, y_pred, color='red', label='Manual Regression')
+        axes[0].set_title('Manual Linear Regression')
+        axes[0].set_xlabel('Mileage')
+        axes[0].set_ylabel('Price')
+        axes[0].legend()
 
-    # Right Subplot: Polyfit Regression
-    axes[1].scatter(x, y, color='blue', label='Data')
-    for i in range(10):
-        plt.plot(x, y_history[i], label=f'Regression {i * 50}', linestyle=':')
+        # Right Subplot: Polyfit Regression
+        axes[1].scatter(x, y, color='blue', label='Data')
+        axes[1].plot(x, prediction_polyfit, color='green', label='Polyfit Regression')
+        axes[1].set_title('Polyfit Linear Regression')
+        axes[1].set_xlabel('Mileage')
+        axes[1].set_ylabel('Price')
+        axes[1].legend()
 
-    axes[1].set_title('Linear Regression Evolution')
-    axes[1].set_xlabel('Mileage')
-    axes[1].set_ylabel('Price')
-    axes[1].legend()
-
-    plt.tight_layout()
-    plt.show()
-
-    # plot polyfit and trained model and compare
-    theta_polyfit = np.polyfit(x.flatten(), y, 1)
-    prediction_polyfit = theta_polyfit[0] * x + theta_polyfit[1]
-
-    # Scatter plot of the dataset
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-
-    # Left Subplot: Manual Linear Regression
-    axes[0].scatter(x, y, color='blue', label='Data')
-    axes[0].plot(x, y_pred, color='red', label='Manual Regression')
-    axes[0].set_title('Manual Linear Regression')
-    axes[0].set_xlabel('Mileage')
-    axes[0].set_ylabel('Price')
-    axes[0].legend()
-
-    # Right Subplot: Polyfit Regression
-    axes[1].scatter(x, y, color='blue', label='Data')
-    axes[1].plot(x, prediction_polyfit, color='green', label='Polyfit Regression')
-    axes[1].set_title('Polyfit Linear Regression')
-    axes[1].set_xlabel('Mileage')
-    axes[1].set_ylabel('Price')
-    axes[1].legend()
-
-    plt.tight_layout()
-    plt.show()
+        plt.tight_layout()
+        plt.show()
 

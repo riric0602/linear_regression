@@ -4,7 +4,7 @@ import pandas as pd
 
 
 def predict(mileage: int, theta: np.array) -> int:
-    return theta[0] + (theta[1] * mileage)
+    return theta[1] + (theta[0] * mileage)
 
 
 if __name__ == "__main__":
