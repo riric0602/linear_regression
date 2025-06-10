@@ -75,8 +75,8 @@ def gradient(X: np.ndarray, y: np.array, theta: np.array) -> np.ndarray:
     m = len(y)
     error = model(X, theta) - y
 
-    theta1_gradient = (1 / m) * np.sum(error * X[:, 0].reshape(-1, 1))
     theta0_gradient = (1 / m) * np.sum(error)
+    theta1_gradient = (1 / m) * np.sum(error * X[:, 0].reshape(-1, 1))
 
     return np.array([[theta1_gradient], [theta0_gradient]])
 
@@ -176,7 +176,7 @@ def mean_absolute_error(y: np.array, pred: np.ndarray) -> float:
     m = y.size
 
     for i in range(m):
-        u += abs(y[i] - pred[i])
+        u += abs(y[i][0] - pred[i][0])
 
     return u / m
 
@@ -185,7 +185,6 @@ if __name__ == "__main__":
     # Load the dataset and convert it to a DataFrame
     car_path = "./data.csv"
     df = pd.read_csv(car_path)
-    print(f'Car Mileage DataFrame: \n{df}', flush=True)
 
     # Convert mileage and price lists into 2D column vectors
     x = np.array(df["km"].values)
@@ -194,10 +193,8 @@ if __name__ == "__main__":
     y = y.reshape(-1, 1)
 
     x_normalized = normalize_features(x)
-    print(f'Normalized KM (features) Values: \n{x_normalized}')
-
     X = np.hstack((x_normalized, np.ones(x_normalized.shape)))
-    print(f'X :\n{X}')
+    print(f'Normalized KM (features) Values: :\n{X}')
 
     # calculate cost before training
     print(f'Initial cost: {cost(X, y, theta)}')
@@ -254,7 +251,7 @@ if __name__ == "__main__":
     print(f"The root average error in the prediction of the model (RMSE) is {root_error:.2f}")
 
     absolute_error = mean_absolute_error(y, y_pred)
-    print(f"The absolute error in the prediction of the model (MAE) is {absolute_error[0]:.2f}")
+    print(f"The absolute error in the prediction of the model (MAE) is {absolute_error:.2f}")
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
@@ -269,25 +266,23 @@ if __name__ == "__main__":
     axes[1].scatter(x, y, color='blue', label='Data')
     for i in range(10):
         plt.plot(x, y_history[i], label=f'Regression {i * 50}', linestyle=':')
+
     axes[1].set_title('Linear Regression Evolution')
     axes[1].set_xlabel('Mileage')
     axes[1].set_ylabel('Price')
     axes[1].legend()
 
-    # Adjust layout and display the plots
     plt.tight_layout()
     plt.show()
 
     # plot polyfit and trained model and compare
     theta_polyfit = np.polyfit(x.flatten(), y, 1)
-    print(theta_polyfit)
-
     prediction_polyfit = theta_polyfit[0] * x + theta_polyfit[1]
 
     # Scatter plot of the dataset
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    # Left Subplot: Manual Gradient Descent Regression
+    # Left Subplot: Manual Linear Regression
     axes[0].scatter(x, y, color='blue', label='Data')
     axes[0].plot(x, y_pred, color='red', label='Manual Regression')
     axes[0].set_title('Manual Linear Regression')
@@ -303,7 +298,6 @@ if __name__ == "__main__":
     axes[1].set_ylabel('Price')
     axes[1].legend()
 
-    # Adjust layout and display the plots
     plt.tight_layout()
     plt.show()
 

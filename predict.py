@@ -4,13 +4,13 @@ import pandas as pd
 
 
 def predict(mileage: int, theta: np.array) -> int:
-    return theta[1] + (theta[0] * mileage)
+    return theta[0] + (theta[1] * mileage)
 
 
 if __name__ == "__main__":
-    if (len(sys.argv) < 2):
+    if len(sys.argv) < 2:
         print('Error: You must provide a car mileage.')
-    elif (int(sys.argv[1]) < 0):
+    elif int(sys.argv[1]) < 0:
         print('Error: Car mileage must be a positive value.')
     else:
         # Load your dataset
