@@ -109,7 +109,7 @@ def gradient_descent(
         theta = theta - (gradient(X, y, theta) * learning_rate)
 
         cost_evolution[i] = cost(X, y, theta)
-        if i % 25 == 0 and index < 10:
+        if i % 50 == 0 and index < 10:
             theta_history[index] = theta
             index += 1
 
@@ -249,21 +249,21 @@ if __name__ == "__main__":
 
     # train model
     print(f'Cost before Minimization Algorithm (Gradient Descent): {cost(X, y, theta)}')
-    theta, cost_evolution, theta_history = gradient_descent(
+    final_theta, cost_evolution, theta_history = gradient_descent(
         X, y, theta, learning_rate, n_iterations
     )
-    print(f'Cost after Minimization Algorithm (Gradient Descent): {cost(X, y, theta)}')
+    print(f'Cost after Minimization Algorithm (Gradient Descent): {cost(X, y, final_theta)}')
 
     # Rebuild theta into proper shape for model()
-    theta = denormalize_features(theta, x)
-    theta = np.array(theta).reshape(-1, 1)
+    final_theta = denormalize_features(final_theta, x)
+    final_theta = np.array(final_theta).reshape(-1, 1)
 
     # Save theta
     theta_file = 'theta.npy'
-    np.save(theta_file, theta)
+    np.save(theta_file, final_theta)
 
     X_raw = np.hstack((np.ones(x.shape), x))
-    y_pred = model(X_raw, theta)
+    y_pred = model(X_raw, final_theta)
 
     if args.plot:
         # Scatter plot of the dataset

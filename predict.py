@@ -26,8 +26,8 @@ if __name__ == "__main__":
             else:
                 theta = np.zeros((2, 1))
 
-            predicted_price = predict(mileage, theta)
-            print(f'The predicted price for {mileage}km is: {predicted_price[0]:.2f}€')
+            predicted_price = max(0, predict(mileage, theta)[0])
+            print(f'The predicted price for {mileage}km is: {predicted_price:.2f}€')
 
     except ValueError:
         print('Error: Invalid input. Please provide a valid car mileage as a positive integer.')
