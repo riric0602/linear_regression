@@ -54,13 +54,14 @@ def cost(X: np.ndarray, y: np.array, theta: np.array) -> float:
     :return: real number describing model performance
     """
     m = len(y)
-    sum = 0
+    sum = np.zeros((1, 1))
 
     for i in range(m):
         Y = model(X, theta)
         sum += (Y[i] - y[i])**2
 
-    return sum / (2 * m)
+    cost = sum / (2 * m)
+    return cost[0, 0]
 
 
 def gradient(X: np.ndarray, y: np.array, theta: np.array) -> np.ndarray:
@@ -107,7 +108,7 @@ def gradient_descent(
     for i in range(n_iterations):
         theta = theta - (gradient(X, y, theta) * learning_rate)
 
-        cost_evolution[i] = cost(X, y, theta).item()
+        cost_evolution[i] = cost(X, y, theta)
         if i % 25 == 0 and index < 10:
             theta_history[index] = theta
             index += 1
