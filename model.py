@@ -28,8 +28,8 @@ def denormalize_features(theta: np.array, x: np.array) -> tuple:
     :param x: features from data set
     :return: denormalized theta parameters
     """
-    theta0 = theta[0, 0] / np.std(x)
-    theta1 = theta[1, 0] - (theta0 * np.mean(x))
+    theta1 = theta[1, 0] / np.std(x)
+    theta0 = theta[0, 0] - (theta1 * np.mean(x))
     return (theta0, theta1)
 
 
@@ -76,10 +76,10 @@ def gradient(X: np.ndarray, y: np.array, theta: np.array) -> np.ndarray:
     m = len(y)
     error = model(X, theta) - y
 
-    theta0_gradient = (1 / m) * np.sum(error)
-    theta1_gradient = (1 / m) * np.sum(error * X[:, 0].reshape(-1, 1))
+    theta0_gradient = (1 / m) * np.sum(error) # Intercept gradient
+    theta1_gradient = (1 / m) * np.sum(error * X[:, 1].reshape(-1, 1)) # Slope gradient
 
-    return np.array([[theta1_gradient], [theta0_gradient]])
+    return np.array([[theta0_gradient], [theta1_gradient]])
 
 
 def gradient_descent(
@@ -108,7 +108,7 @@ def gradient_descent(
         theta = theta - (gradient(X, y, theta) * learning_rate)
 
         cost_evolution[i] = cost(X, y, theta).item()
-        if i % 50 == 0 and index < 10:
+        if i % 25 == 0 and index < 10:
             theta_history[index] = theta
             index += 1
 
@@ -221,6 +221,11 @@ def argparse_flags() -> argparse.Namespace:
     return parsed_args
 
 
+def close_on_key(event):
+    if event.key == 'escape':
+        plt.close(event.canvas.figure)
+
+
 if __name__ == "__main__":
     args = argparse_flags()
 
@@ -235,11 +240,11 @@ if __name__ == "__main__":
     y = y.reshape(-1, 1)
 
     x_normalized = normalize_features(x)
-    X = np.hstack((x_normalized, np.ones(x_normalized.shape)))
+    X = np.hstack((np.ones(x_normalized.shape), x_normalized))
 
     # calculate cost before training
-    learning_rate = 0.01
-    n_iterations = 500
+    learning_rate = 0.015
+    n_iterations = 460
 
     # train model
     print(f'Cost before Minimization Algorithm (Gradient Descent): {cost(X, y, theta)}')
@@ -256,7 +261,7 @@ if __name__ == "__main__":
     theta_file = 'theta.npy'
     np.save(theta_file, theta)
 
-    X_raw = np.hstack((x, np.ones(x.shape)))
+    X_raw = np.hstack((np.ones(x.shape), x))
     y_pred = model(X_raw, theta)
 
     if args.plot:
@@ -270,6 +275,8 @@ if __name__ == "__main__":
         plt.legend()
         plt.tight_layout()
         plt.grid(True)
+        fig = plt.gcf()
+        fig.canvas.mpl_connect('key_press_event', close_on_key)
         plt.show()
 
     # Display statistics
@@ -313,6 +320,8 @@ if __name__ == "__main__":
         axes[1].legend()
 
         plt.tight_layout()
+        fig = plt.gcf()
+        fig.canvas.mpl_connect('key_press_event', close_on_key)
         plt.show()
 
 
@@ -341,5 +350,7 @@ if __name__ == "__main__":
         axes[1].legend()
 
         plt.tight_layout()
+        fig = plt.gcf()
+        fig.canvas.mpl_connect('key_press_event', close_on_key)
         plt.show()
 
