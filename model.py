@@ -181,6 +181,7 @@ def mean_absolute_error(y: np.array, pred: np.ndarray) -> float:
 
     return u / m
 
+
 def argparse_flags() -> argparse.Namespace:
     """
     Parse command line arguments
@@ -200,7 +201,7 @@ def argparse_flags() -> argparse.Namespace:
             "-e",
             "--evolution",
             action="store_true",
-            help="Display the cost and theta calculation evolution",
+            help="Display the cost and regression evolution",
     )
     parser.add_argument(
             "-c",
@@ -241,6 +242,7 @@ if __name__ == "__main__":
     n_iterations = 500
 
     # train model
+    print(f'Cost before Minimization Algorithm (Gradient Descent): {cost(X, y, theta)}')
     theta, cost_evolution, theta_history = gradient_descent(
         X, y, theta, learning_rate, n_iterations
     )
