@@ -247,12 +247,12 @@ if __name__ == "__main__":
     learning_rate = 0.015
     n_iterations = 460
 
-    # train model
     print(f'Cost before Minimization Algorithm (Gradient Descent): {cost(X, y, theta)}')
+
+    # train model
     final_theta, cost_evolution, theta_history = gradient_descent(
         X, y, theta, learning_rate, n_iterations
     )
-    print(f'Cost after Minimization Algorithm (Gradient Descent): {cost(X, y, final_theta)}')
 
     # Rebuild theta into proper shape for model()
     final_theta = denormalize_features(final_theta, x)
@@ -261,6 +261,9 @@ if __name__ == "__main__":
     # Save theta
     theta_file = 'theta.npy'
     np.save(theta_file, final_theta)
+    
+    print('Model trained successfully!')
+    print(f'Cost after Minimization Algorithm (Gradient Descent): {cost(X, y, final_theta)}')
 
     X_raw = np.hstack((np.ones(x.shape), x))
     y_pred = model(X_raw, final_theta)

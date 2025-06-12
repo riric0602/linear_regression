@@ -31,3 +31,6 @@ if __name__ == "__main__":
 
     except ValueError:
         print('Error: Invalid input. Please provide a valid car mileage as a positive integer.')
+
+    except Exception as e:
+        print(f'Error: {e}')
